@@ -8,10 +8,10 @@ class LoadDimensionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id: "redshift",
-                 target_table: "",
-                 sql_statement: "",
-                 truncate_insert: True,
+                 redshift_conn_id="redshift",
+                 target_table="",
+                 sql_statement="",
+                 truncate_insert=True,
                  *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)

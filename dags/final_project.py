@@ -3,8 +3,8 @@ import pendulum
 import os
 from airflow.decorators import dag
 from airflow.operators.dummy import DummyOperator
-from operators import (StageToRedshiftOperator, LoadFactOperator,
-                       LoadDimensionOperator, DataQualityOperator)
+from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
+                               LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
 default_args = {
