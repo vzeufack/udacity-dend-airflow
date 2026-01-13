@@ -24,7 +24,7 @@ default_args = {
 )
 def final_project():
 
-    start_operator = DummyOperator(task_id='Begin_execution')
+    start_operator = DummyOperator(task_id='start_execution')
 
     stage_events_to_redshift = StageToRedshiftOperator(
         task_id='Stage_events',
@@ -69,10 +69,58 @@ def final_project():
         sql_statement=SqlQueries.time_table_insert
     )
 
+    dq_checks = [
+        {
+            "sql": "SELECT COUNT(*) FROM staging_events",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "staging_events table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM staging_songs",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "staging_songs table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM songplays",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "songplays table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM songs",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "songs table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM artists",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "artists table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM users",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "users table should not be empty"
+        },
+        {
+            "sql": "SELECT COUNT(*) FROM time",
+            "expected_result": 1,
+            "comparison": ">",
+            "description": "time table should not be empty"
+        }
+    ]
+
     run_quality_checks = DataQualityOperator(
-        task_id='Run_data_quality_checks',
-        tables=["staging_events", "staging_songs", "songplays", "songs", "artists", "users", "time"]
+        task_id="Run_data_quality_checks",
+        redshift_conn_id="redshift",
+        checks=dq_checks
     )
+
+    end_operator = DummyOperator(task_id='end_execution')
 
     start_operator >> stage_events_to_redshift >> load_songplays_table
     start_operator >> stage_songs_to_redshift >> load_songplays_table
@@ -80,5 +128,6 @@ def final_project():
     load_songplays_table >> load_song_dimension_table >> run_quality_checks
     load_songplays_table >> load_artist_dimension_table >> run_quality_checks
     load_songplays_table >> load_time_dimension_table >> run_quality_checks
+    run_quality_checks >> end_operator
 
 final_project_dag = final_project()
